@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>GreenMart — Soft Aesthetic Demo</title>
+  <style>
+    /* Palette + base */
+    :root{
+      --lavender:#f3e8ff;
+      --mint:#e8fff3;
+      --brand:#ff7a00;
+      --soft:#f9fafb;
+      --muted:#6b7280;
+      --text:#0f172a;
+      --glass-bg:rgba(255,255,255,0.66);
+      --shadow:0 6px 18px rgba(15,23,42,0.06);
+    }
+
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;color:var(--text);background:var(--soft)}
+    .container{max-width:1200px;margin:0 auto;padding:1rem}
+
+    /* --- Header: soft aesthetic, glass + gradient --- */
+    header.aesthetic-header{
+      background:linear-gradient(120deg,var(--lavender) 0%, #ffffff 45%, var(--mint) 100%);
+      box-shadow:0 6px 18px rgba(15,23,42,0.06);
+      padding:0.75rem 0;position:sticky;top:0;z-index:40;border-bottom-left-radius:12px;border-bottom-right-radius:12px;
+    }
+    .header-inner{display:flex;align-items:center;gap:1rem}
+    .header-inner .left, .header-inner .center, .header-inner .right{display:flex;align-items:center}
+    .header-inner .left{flex:0 0 auto}
+    .header-inner .center{flex:1;justify-content:center}
+    .header-inner .right{flex:0 0 auto;gap:0.6rem}
+
+    /* Home tab */
+    .brand{display:flex;flex-direction:column;line-height:1;margin-right:0.75rem}
+    .brand .title{font-weight:800;color:#2b2b2b;font-size:1.05rem;letter-spacing:0.2px}
+    .brand .tag{font-size:0.72rem;color:var(--muted);margin-top:2px}
+
+    .home-tab{display:inline-flex;align-items:center;gap:0.45rem;padding:0.36rem 0.7rem;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,0.85),rgba(255,255,255,0.65));box-shadow:var(--shadow);text-decoration:none;color:var(--text);font-weight:700;font-size:0.95rem}
+    .home-tab:hover{transform:translateY(-1px)}
+
+    /* Search pill (compact) */
+    .search-pill{display:flex;align-items:center;gap:0.45rem;background:var(--glass-bg);padding:0.28rem 0.5rem;border-radius:999px;box-shadow:0 4px 12px rgba(16,24,40,0.05);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.6);max-width:520px;width:100%;height:40px}
+    .search-pill svg{flex:0 0 auto;opacity:0.95;width:18px;height:18px}
+    .search-pill input{flex:1;border:0;background:transparent;outline:none;padding:0 0.25rem;color:var(--text);font-size:0.9rem;height:36px}
+    .search-pill input::placeholder{color:#9ca3af}
+
+    /* Icon buttons */
+    .icon{display:inline-grid;place-items:center;width:44px;height:44px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.9),rgba(255,255,255,0.7));box-shadow:0 6px 14px rgba(15,23,42,0.05);border:1px solid rgba(255,255,255,0.5);cursor:pointer}
+    .icon svg{width:20px;height:20px;display:block}
+
+    /* Pastel strokes */
+    .icon.heart svg path{fill:#ffd1e6;stroke:#ff9ccf;stroke-width:1}
+    .icon.cart svg path{fill:#e6fff3;stroke:#8de0b8;stroke-width:1}
+
+    /* Accessibility + contrast */
+    .home-tab, .search-pill input, .icon{color:var(--text)}
+
+    /* Mobile adjustments */
+    @media (max-width:720px){
+      .header-inner{flex-direction:column;align-items:stretch}
+      .header-inner .center{order:2;width:100%;padding:0.4rem 0}
+      .header-inner .left,.header-inner .right{justify-content:space-between;padding:0 0.5rem}
+      .icon{width:40px;height:40px;border-radius:10px}
+      .search-pill{max-width:100%;height:40px;padding:0.25rem 0.5rem}
+      .search-pill input{font-size:0.9rem}
+    }
+
+    /* --- Keep rest of app styles (cleaned minimal) --- */
+    :root{--brand:#ff7a00;--muted:#666;--bg:#f4f6f8;--card:#ffffff}
+    *{box-sizing:border-box}
+    body{background:var(--bg)}
+    .app-grid{display:grid;grid-template-columns:260px 1fr 320px;gap:1rem;align-items:start;padding-top:0.75rem}
+    .sidebar{background:var(--card);padding:1rem;border-radius:8px;height:fit-content}
+    .content{display:block}
+    .cart-panel{background:var(--card);padding:1rem;border-radius:8px;height:fit-content;position:sticky;top:100px}
+    .search input{flex:1;padding:0.6rem;border:1px solid #e2e8f0;border-radius:6px}
+    .search button{background:var(--brand);color:#fff;border:none;padding:0 0.9rem;border-radius:6px;cursor:pointer}
+    .categories{display:flex;flex-direction:row;gap:0.5rem;flex-wrap:wrap;align-items:center;overflow:auto;padding-bottom:0.25rem}
+    .categories::-webkit-scrollbar{height:8px}
+    .categories::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.06);border-radius:999px}
+    .category{padding:0.28rem 0.6rem;border-radius:8px;color:#333;font-weight:600;background:transparent;border:1px solid transparent;font-size:0.92rem;white-space:nowrap}
+    .category:hover{background:#f7fbf7;border-color:#eef7ee}
+    .hero{background:linear-gradient(90deg,#fff,#fbfbfb);padding:1rem;margin:1rem 0;border-radius:8px;display:flex;gap:1rem;align-items:center}
+    .products{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem}
+    .product{background:var(--card);border-radius:8px;padding:0.75rem;display:flex;flex-direction:column;gap:0.5rem;box-shadow:0 1px 2px rgba(0,0,0,0.02)}
+    .product img{width:100%;height:160px;border-radius:6px;object-fit:cover}
+    .product h3{margin:0;font-size:1rem}
+    .product p{margin:0;color:var(--muted);font-size:0.9rem}
+    .price{font-weight:800;color:#111;margin-top:0.25rem}
+    .badge{display:inline-block;background:#fff6ea;color:var(--brand);padding:0.2rem 0.5rem;border-radius:12px;font-size:0.75rem;border:1px solid #ffe6c6}
+    .actions{display:flex;gap:0.5rem;align-items:center;margin-top:0.5rem}
+    .btn{background:var(--brand);color:#fff;border:none;padding:0.5rem 0.75rem;border-radius:6px;cursor:pointer}
+    .btn.secondary{background:#fff;border:1px solid #e6e6e6;color:#333}
+    .qty{display:inline-flex;border:1px solid #e6e6e6;border-radius:6px;overflow:hidden}
+    .qty button{background:transparent;border:0;padding:0.35rem 0.5rem;cursor:pointer}
+    .qty span{padding:0.35rem 0.6rem;min-width:24px;text-align:center}
+    .cart-summary{border-top:1px dashed #eee;padding-top:0.75rem;margin-top:0.75rem}
+    .cart-item{display:flex;gap:0.5rem;align-items:center;padding:0.5rem 0;border-bottom:1px solid #fafafa}
+    .cart-item img{width:48px;height:48px;border-radius:6px;object-fit:cover}
+    .cart-total{font-weight:800;margin-top:0.5rem}
+    footer.footer{background:transparent;border-top:0;padding:1rem;margin-top:2rem;text-align:center}
+    @media (max-width:980px){.app-grid{grid-template-columns:1fr;}.cart-panel{position:relative;top:auto;margin-top:0}}
+  </style>
+</head>
+<body>
+  <!-- Header: soft, cute, glassmorphism -->
+  <header class="aesthetic-header">
+    <div class="container header-inner">
+      <div class="left">
+        <div class="brand">
+          <div class="title">LuluMart</div>
+          <div class="tag">fresh • cute • daily</div>
+        </div>
+        <a class="home-tab" href="#">Home</a>
+      </div>
+
+      <div class="center">
+        <div class="search-pill" role="search" aria-label="Site search">
+          <!-- soft search icon -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="#c7b3ff" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M21 21l-4.35-4.35" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+            <circle cx="11" cy="11" r="5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+          </svg>
+          <input placeholder="Search for products, brands or categories" />
+        </div>
+      </div>
+
+      <div class="right">
+        <button class="icon heart" aria-label="Likes">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M12 20s-6.716-4.35-9-7.05C-0.05 8.95 3.08 4 7.5 6.5 9.07 7.5 10 10 12 12c2-2 2.93-4.5 4.5-5.5C20.92 4 24.05 8.95 21 12.95 18.716 15.65 12 20 12 20z"/>
+          </svg>
+        </button>
+
+        <button class="icon cart" aria-label="Cart">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M3 3h2l.6 3M7 13h10l3-8H6.2" fill="none" stroke="#8de0b8" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/>
+            <circle cx="10" cy="20" r="1" fill="#8de0b8"/>
+            <circle cx="18" cy="20" r="1" fill="#8de0b8"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main App Content (kept from previous) -->
+  <main class="container">
+    <div class="app-grid">
+      <aside class="sidebar">
+        <div class="search">
+          <input type="search" placeholder="Search for products, e.g. 'rice'" aria-label="Search" />
+          <button aria-label="Search">Search</button>
+        </div>
+
+        <h4 style="margin:0.5rem 0">Categories</h4>
+        <div class="categories">
+          <button class="category">Staples</button>
+          <button class="category">Fruits & Vegetables</button>
+          <button class="category">Personal Care</button>
+          <button class="category">Home Care</button>
+          <button class="category">Kitchen</button>
+        </div>
+
+        <h4 style="margin:1rem 0 0.5rem">Filters</h4>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+          <button class="badge">Free Delivery</button>
+          <button class="badge">Min. 2kg</button>
+          <button class="badge">Organic</button>
+        </div>
+      </aside>
+
+      <section class="content">
+        <section id="featured" class="hero">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:center">
+            <img src="images/cutlery.jpeg" alt="Featured reusable bamboo cutlery set" style="width:100%;border-radius:8px" />
+            <div>
+              <h3>Reusable Bamboo Cutlery Set — Compact & Sustainable</h3>
+              <p>Lightweight 6-piece set made from sustainable bamboo. Includes fork, spoon, knife, chopsticks and a pouch. Dishwasher safe.</p>
+              <div class="price">$12.99</div>
+              <div class="actions">
+                <div class="qty" aria-hidden="true">
+                  <button>-</button><span>1</span><button>+</button>
+                </div>
+                <button class="btn">Add</button>
+                <button class="btn secondary">Save</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="products">
+          <h2 style="margin-top:1rem">Products for you</h2>
+          <div style="margin:0.5rem 0;color:var(--muted)">Showing 4 items — <em>Sort:</em> Popular</div>
+          <div class="products">
+            <div class="product">
+              <img src="images/cutlery.jpeg" alt="Reusable bamboo cutlery set" />
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <h3>Reusable Bamboo Cutlery Set</h3>
+                <span class="badge">Bestseller</span>
+              </div>
+              <p>Lightweight 6-piece set made from sustainable bamboo. Dishwasher safe.</p>
+              <div class="price">$12.99</div>
+              <div class="actions">
+                <div class="qty" aria-hidden="true"><button>-</button><span>1</span><button>+</button></div>
+                <button class="btn">Add</button>
+                <details style="margin-left:auto"><summary class="btn secondary">Details</summary><p style="margin:0.5rem 0 0;color:var(--muted)">Includes fork, spoon, knife, chopsticks and a pouch.</p></details>
+              </div>
+            </div>
+
+            <div class="product">
+              <img src="images/tote.jpeg" alt="Organic cotton tote bag" />
+              <h3>Organic Cotton Tote Bag</h3>
+              <p>Durable tote made from certified organic cotton. Perfect for groceries and errands.</p>
+              <div class="price">$9.50</div>
+              <div class="actions">
+                <div class="qty" aria-hidden="true"><button>-</button><span>1</span><button>+</button></div>
+                <button class="btn">Add</button>
+                <button class="btn secondary">Share</button>
+              </div>
+            </div>
+
+            <div class="product">
+              <img src="images/food%20wrap.jpeg" alt="Beeswax food wraps" />
+              <h3>Beeswax Wraps (3-pack)</h3>
+              <p>Reusable food wraps to replace single-use plastic cling film. Washable and breathable.</p>
+              <div class="price">$14.00</div>
+              <div class="actions">
+                <div class="qty" aria-hidden="true"><button>-</button><span>1</span><button>+</button></div>
+                <button class="btn">Add</button>
+                <button class="btn secondary">Save 10%</button>
+              </div>
+            </div>
+
+            <div class="product">
+              <img src="images/bottle.jpeg" alt="Tempered glass water bottle" />
+              <h3>Tempered Glass Water Bottle</h3>
+              <p>500ml bottle with silicone sleeve — elegant, safe, and easy to clean.</p>
+              <div class="price">$18.75</div>
+              <div class="actions">
+                <div class="qty" aria-hidden="true"><button>-</button><span>1</span><button>+</button></div>
+                <button class="btn">Add</button>
+                <button class="btn secondary">Wishlist</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <aside class="cart-panel">
+        <h4>Cart (demo)</h4>
+        <div class="cart-item">
+          <img src="images/cutlery.jpeg" alt="" />
+          <div>
+            <div style="font-weight:700">Reusable Bamboo Cutlery</div>
+            <div style="color:var(--muted);font-size:0.9rem">1 × $12.99</div>
+          </div>
+        </div>
+        <div class="cart-item">
+          <img src="images/tote.jpeg" alt="" />
+          <div>
+            <div style="font-weight:700">Organic Tote</div>
+            <div style="color:var(--muted);font-size:0.9rem">1 × $9.50</div>
+          </div>
+        </div>
+        <div class="cart-summary">
+          <div class="cart-total">Subtotal: $22.49</div>
+          <a href="checkout.html" class="btn" style="display:block;text-align:center;width:100%;margin-top:0.5rem;text-decoration:none;color:#fff">Proceed to Checkout</a>
+          <button class="btn secondary" style="width:100%;margin-top:0.5rem">View Offers</button>
+        </div>
+      </aside>
+    </div>
+
+    <section id="contact" style="margin-top:1.5rem">
+      <h2>Contact & Info</h2>
+      <p>Questions? Email us at <a href="mailto:hello@greenmart.example">hello@greenmart.example</a> or call <strong>(555) 123-4567</strong>.</p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <small>© 2025 GreenMart — A demo store. No real transactions.</small>
+    </div>
+  </footer>
+</body>
+</html>
