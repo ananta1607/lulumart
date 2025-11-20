@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MoodMelody — Mood-Based Music Suggestions</title>
+  <link rel="stylesheet" href="mood.css">
+</head>
+<body>
+  <header class="site-header auto-layout row" role="banner">
+    <div class="auto-layout row center gap-sm">
+      <button class="logo-btn" aria-label="MoodMelody home">
+        <!-- playful logo -->
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="8" cy="12" r="6" fill="#ffdce6"/>
+          <path d="M14 6v12a4 4 0 0 0 4-4V10a4 4 0 0 0-4-4z" fill="#e2fbdc"/>
+        </svg>
+      </button>
+      <div class="site-title">
+        <h1>MoodMelody</h1>
+        <p class="tag">Music that fits your mood — cute & pastel</p>
+      </div>
+    </div>
+
+    <div class="auto-layout row gap-sm actions">
+      <label class="search-pill" role="search" aria-label="Search songs">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 21l-4.35-4.35" stroke="#8b5cf6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        <input type="search" placeholder="Search songs, moods, artists" aria-label="Search input" />
+      </label>
+      <button class="icon-btn" aria-label="Favorites">
+        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.7-4.3-9-7C-0.05 9.95 3.08 5 7.5 7.5 9.07 8.5 10 11 12 13c2-2 2.93-4.5 4.5-5.5 4.42-2.5 8.55 2.45 5.5 6.45-2.3 2.7-9 7-9 7z" fill="#ffd1e6" stroke="#ff9ccf"/></svg>
+      </button>
+      <button class="icon-btn" aria-label="Your Library">
+        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2" fill="#e6fff3" stroke="#8de0b8"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="auto-layout col page" id="main" role="main">
+
+    <!-- Hero -->
+    <section class="hero auto-layout col center gap-lg" aria-labelledby="hero-title">
+      <div class="hero-inner auto-layout row center space-between">
+        <div class="auto-layout col gap-sm hero-text" style="max-width:54ch;">
+          <h2 id="hero-title">Find a playlist that matches your mood</h2>
+          <p class="muted">Pick a mood below and we will suggest playlists that fit — calm mornings to energetic evenings.</p>
+          <div class="auto-layout row gap-sm">
+            <button class="btn primary" id="discover-btn">Discover</button>
+            <button class="btn ghost" id="surprise-btn">Surprise me</button>
+          </div>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <!-- decorative illustration (CSS-styled) -->
+          <div class="art-card">
+            <svg viewBox="0 0 200 160" width="220" height="176" aria-hidden="true">
+              <defs>
+                <linearGradient id="g1" x1="0" x2="1"><stop offset="0" stop-color="#fff1f8"/><stop offset="1" stop-color="#f0fff4"/></linearGradient>
+              </defs>
+              <rect x="10" y="10" width="180" height="140" rx="16" fill="url(#g1)" stroke="#efe2ff"/>
+              <circle cx="60" cy="70" r="28" fill="#ffdce6"/>
+              <rect x="100" y="44" width="68" height="68" rx="10" fill="#e2fbdc"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mood cards (Auto Layout groups) -->
+    <section class="moods auto-layout col" aria-label="Mood categories">
+      <h3>Choose a Mood</h3>
+      <!-- One-line category strip: evenly sized, auto-layout cards -->
+      <div class="category-strip-wrap auto-layout row space-between" aria-hidden="false">
+        <div class="category-strip auto-layout row" role="list" aria-label="Mood categories strip">
+        <button class="category-card auto-layout col center" role="listitem" data-cat="happy" aria-pressed="false">
+          <div class="cat-icon" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#fff3e6"/></svg></div>
+          <div class="cat-label">Happy</div>
+          <span class="cat-count" aria-hidden="true">0</span>
+        </button>
+
+        <button class="category-card auto-layout col center" role="listitem" data-cat="sad" aria-pressed="false">
+          <div class="cat-icon" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#e6f0ff"/></svg></div>
+          <div class="cat-label">Sad</div>
+          <span class="cat-count" aria-hidden="true">0</span>
+        </button>
+
+        <button class="category-card auto-layout col center" role="listitem" data-cat="chill" aria-pressed="false">
+          <div class="cat-icon" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="6" fill="#e6fff3"/></svg></div>
+          <div class="cat-label">Chill</div>
+          <span class="cat-count" aria-hidden="true">0</span>
+        </button>
+
+        <button class="category-card auto-layout col center" role="listitem" data-cat="romantic" aria-pressed="false">
+          <div class="cat-icon" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24"><path d="M12 21s-6.7-4.3-9-7C-0.05 9.95 3.08 5 7.5 7.5 9.07 8.5 10 11 12 13c2-2 2.93-4.5 4.5-5.5 4.42-2.5 8.55 2.45 5.5 6.45-2.3 2.7-9 7-9 7z" fill="#fff1f8"/></svg></div>
+          <div class="cat-label">Romantic</div>
+          <span class="cat-count" aria-hidden="true">0</span>
+        </button>
+
+        <button class="category-card auto-layout col center" role="listitem" data-cat="energetic" aria-pressed="false">
+          <div class="cat-icon" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="6" fill="#fff6e6"/></svg></div>
+          <div class="cat-label">Energetic</div>
+          <span class="cat-count" aria-hidden="true">0</span>
+        </button>
+
+        <button class="category-card auto-layout col center" role="listitem" data-cat="focus" aria-pressed="false">
+          <div class="cat-icon" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#f6e6ff"/></svg></div>
+          <div class="cat-label">Focus</div>
+          <span class="cat-count" aria-hidden="true">0</span>
+        </button>
+        </div>
+        <div class="category-actions auto-layout row center">
+          <button id="clear-category" class="clear-filter btn ghost" aria-label="Clear category filter">Clear</button>
+        </div>
+      </div>
+      <div class="mood-list auto-layout row wrap gap-md" role="list">
+        <!-- Each mood: auto-layout group with icon + text -->
+        <button class="mood-card auto-layout row center gap-sm" data-mood="chill" role="listitem" aria-pressed="false">
+          <div class="mood-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#e6f3ff"/></svg>
+          </div>
+          <div class="auto-layout col">
+            <strong>Chill</strong>
+            <span class="muted small">Relaxing beats</span>
+          </div>
+        </button>
+
+        <button class="mood-card auto-layout row center gap-sm" data-mood="happy" role="listitem" aria-pressed="false">
+          <div class="mood-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" fill="#fff3e6"/></svg>
+          </div>
+          <div class="auto-layout col">
+            <strong>Happy</strong>
+            <span class="muted small">Upbeat & joyful</span>
+          </div>
+        </button>
+
+        <button class="mood-card auto-layout row center gap-sm" data-mood="focus" role="listitem" aria-pressed="false">
+          <div class="mood-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="6" fill="#fff6e6"/></svg>
+          </div>
+          <div class="auto-layout col">
+            <strong>Focus</strong>
+            <span class="muted small">Instrumental & calm</span>
+          </div>
+        </button>
+
+        <button class="mood-card auto-layout row center gap-sm" data-mood="party" role="listitem" aria-pressed="false">
+          <div class="mood-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4" fill="#f6e6ff"/></svg>
+          </div>
+          <div class="auto-layout col">
+            <strong>Party</strong>
+            <span class="muted small">Energetic hits</span>
+          </div>
+        </button>
+      </div>
+    </section>
+
+    <!-- Playlists grid (Auto Layout stacks inside cards) -->
+    <section class="playlists auto-layout col" aria-label="Suggested playlists">
+      <h3>Suggested Playlists</h3>
+      <div class="playlist-grid auto-layout grid gap-lg" id="playlistGrid">
+        <!-- Playlist card template (JS will filter and focus) -->
+        <article class="playlist-card auto-layout col" tabindex="0" data-mood="chill">
+          <div class="art-thumb" aria-hidden="true">
+            <img data-src-base="assets/images/playlist1" src="assets/images/playlist1.svg" alt="Sunrise Chill artwork" />
+          </div>
+          <div class="auto-layout col gap-xxs meta">
+            <strong>Sunrise Chill</strong>
+            <span class="muted small">Mellow morning beats</span>
+          </div>
+        </article>
+
+        <article class="playlist-card auto-layout col" tabindex="0" data-mood="happy">
+          <div class="art-thumb" aria-hidden="true"><img data-src-base="assets/images/playlist2" src="assets/images/playlist2.svg" alt="Breezy Day artwork" /></div>
+          <div class="auto-layout col gap-xxs meta">
+            <strong>Breezy Day</strong>
+            <span class="muted small">Feel-good pop</span>
+          </div>
+        </article>
+
+        <article class="playlist-card auto-layout col" tabindex="0" data-mood="focus">
+          <div class="art-thumb" aria-hidden="true"><img data-src-base="assets/images/playlist3" src="assets/images/playlist3.svg" alt="Deep Work artwork" /></div>
+          <div class="auto-layout col gap-xxs meta"><strong>Deep Work</strong><span class="muted small">Background focus music</span></div>
+        </article>
+
+        <article class="playlist-card auto-layout col" tabindex="0" data-mood="party">
+          <div class="art-thumb" aria-hidden="true"><img data-src-base="assets/images/playlist4" src="assets/images/playlist4.svg" alt="Dance Floor artwork" /></div>
+          <div class="auto-layout col gap-xxs meta"><strong>Dance Floor</strong><span class="muted small">Club-ready bangers</span></div>
+        </article>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Mini player — Auto Layout row that stretches content -->
+  <footer class="mini-player auto-layout row center gap-sm" role="contentinfo" aria-label="Mini player">
+    <div class="player-track auto-layout row center gap-sm">
+      <div class="player-thumb" aria-hidden="true">
+        <svg viewBox="0 0 48 48" width="48" height="48"><rect width="48" height="48" rx="8" fill="#fff1f8"/></svg>
+      </div>
+      <div class="auto-layout col track-meta">
+        <strong id="now-title">Sunrise Chill</strong>
+        <span class="muted small">Various Artists — 28m</span>
+      </div>
+    </div>
+    <div class="player-controls auto-layout row center gap-sm">
+      <button class="icon-btn" id="prev" aria-label="Previous">
+        <svg width="20" height="20" viewBox="0 0 24 24"><path d="M11 19V5l-9 7 9 7zM22 19V5l-9 7 9 7z" fill="#6b7280"/></svg>
+      </button>
+      <button class="play-btn icon-btn primary" id="play" aria-label="Play" aria-pressed="false">▶</button>
+      <button class="icon-btn" id="next" aria-label="Next">
+        <svg width="20" height="20" viewBox="0 0 24 24"><path d="M13 5v14l9-7-9-7zM2 5v14l9-7-9-7z" fill="#6b7280"/></svg>
+      </button>
+    </div>
+  </footer>
+
+  <script src="mood.js" defer></script>
+</body>
+</html>

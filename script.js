@@ -1,200 +1,176 @@
-// Simple cart logic for the single-page shop
-const PRODUCTS = [
-  {id:1,name:'Reusable Bamboo Cutlery Set',price:12.99,img:'https://picsum.photos/seed/p1/400/300'},
-  {id:2,name:'Organic Cotton Tote Bag',price:9.5,img:'https://picsum.photos/seed/p2/400/300'},
-  {id:3,name:'Beeswax Wraps (3-pack)',price:14.0,img:'https://picsum.photos/seed/p3/400/300'},
-  {id:4,name:'Solar LED Lantern',price:29.99,img:'https://picsum.photos/seed/p4/400/300'},
-  {id:5,name:'Glass Reusable Bottle',price:18.75,img:'https://picsum.photos/seed/p5/400/300'},
-  {id:6,name:'Plantable Seed Paper Cards',price:6.0,img:'https://picsum.photos/seed/p6/400/300'}
-];
+/*
+  script.js — focused on UI behaviors for the home page
+  - Carousel (auto-rotate every 3s, swipe, prev/next, indicators)
+  - Back button: hidden/disabled on root
+  - Modal overlay dismiss (backdrop, Escape, close button)
+  - Block duplicate rapid navigation (double-tap) globally
++  Images and icons are loaded from `assets/images/` as required.
+*/
 
-const LS_KEY = 'sp_ecom_cart';
-let cart = {}; // { productId: qty }
+(function(){
+  const AUTO_ROTATE_MS = 3000;
+  let carouselTimer = null;
+  let current = 0;
+  let isInteracting = false;
+  const doubleTapGuard = new Map();
 
-// Utilities
-const fmt = n => n.toLocaleString(undefined,{style:'currency',currency:'USD'});
+  function qs(sel){return document.querySelector(sel)}
+  function qsa(sel){return Array.from(document.querySelectorAll(sel))}
 
-function loadCart(){
-  try{
-    const raw = localStorage.getItem(LS_KEY);
-    cart = raw ? JSON.parse(raw) : {};
-  }catch(e){cart={};}
-}
-function saveCart(){
-  localStorage.setItem(LS_KEY,JSON.stringify(cart));
-}
+  // Carousel setup
+  function initCarousel(){
+    const carousel = qs('#hero-carousel');
+    if(!carousel) return;
+    const track = carousel.querySelector('.carousel-track');
+    const slides = carousel.querySelectorAll('.carousel-slide');
+    // Prefer common raster formats in assets if available (banner1.jpg/png etc.)
+    const tryPreferRaster = async () => {
+      const exts = ['png','jpg','jpeg','svg'];
+      const loadImg = (url) => new Promise((resolve,reject)=>{ const img=new Image(); img.onload=()=>resolve(url); img.onerror=()=>reject(url); img.src=url; });
+      for(const s of slides){
+        const imgEl = s.querySelector('img');
+        if(!imgEl) continue;
+        const base = imgEl.dataset.srcBase || imgEl.src.replace(/\.(svg|png|jpe?g)$/i,'');
+        // try extensions in order and set the first that loads
+        for(const ext of exts){
+          const candidate = `${base}.${ext}`;
+          try{
+            // eslint-disable-next-line no-await-in-loop
+            await loadImg(candidate);
+            imgEl.src = candidate;
+            break;
+          }catch(e){ /* try next */ }
+        }
+      }
+    };
+    // kick off preference check (non-blocking)
+    tryPreferRaster();
+    const indicators = carousel.querySelectorAll('.carousel-indicators [role="tab"]');
+    const btnPrev = carousel.querySelector('.carousel-btn.prev');
+    const btnNext = carousel.querySelector('.carousel-btn.next');
 
-// Single clean cart script for the demo shop
-const PRODUCTS = [
-  {id:1,name:'Reusable Bamboo Cutlery Set',price:12.99,img:'https://picsum.photos/seed/p1/400/300'},
-  {id:2,name:'Organic Cotton Tote Bag',price:9.5,img:'https://picsum.photos/seed/p2/400/300'},
-  {id:3,name:'Beeswax Wraps (3-pack)',price:14.0,img:'https://picsum.photos/seed/p3/400/300'},
-  {id:4,name:'Solar LED Lantern',price:29.99,img:'https://picsum.photos/seed/p4/400/300'},
-  {id:5,name:'Glass Reusable Bottle',price:18.75,img:'https://picsum.photos/seed/p5/400/300'},
-  {id:6,name:'Plantable Seed Paper Cards',price:6.0,img:'https://picsum.photos/seed/p6/400/300'}
-];
+    function goTo(idx, userTriggered=false){
+      idx = (idx + slides.length) % slides.length;
+      slides.forEach((s,i)=>{
+        const hidden = i!==idx;
+        s.setAttribute('aria-hidden', hidden ? 'true' : 'false');
+        s.classList.toggle('active', i===idx);
+      });
+      indicators.forEach((b,i)=>{
+        b.setAttribute('aria-selected', i===idx ? 'true' : 'false');
+        b.classList.toggle('active', i===idx);
+      });
+      current = idx;
+      resetTimer();
+    }
 
-const LS_KEY = 'sp_ecom_cart';
-let cart = {}; // { productId: qty }
+    function next(){ goTo(current+1, true); }
+    function prev(){ goTo(current-1, true); }
 
-// Utilities
-const fmt = n => n.toLocaleString(undefined,{style:'currency',currency:'USD'});
+    btnNext.addEventListener('click', e => { if(blockDoubleTap(e.currentTarget)) return; next(); });
+    btnPrev.addEventListener('click', e => { if(blockDoubleTap(e.currentTarget)) return; prev(); });
 
-function loadCart(){
-  try{
-    const raw = localStorage.getItem(LS_KEY);
-    cart = raw ? JSON.parse(raw) : {};
-  }catch(e){cart={};}
-}
-function saveCart(){
-  localStorage.setItem(LS_KEY,JSON.stringify(cart));
-}
+    indicators.forEach((b,i)=> b.addEventListener('click', e => { if(blockDoubleTap(b)) return; goTo(i, true); }));
 
-// Render products
-function renderProducts(){
-  const container = document.getElementById('products');
-  container.innerHTML = '';
-  PRODUCTS.forEach(p => {
-    const card = document.createElement('article');
-    card.className = 'card';
-    card.innerHTML = `
-      <img src="${p.img}" alt="${p.name}" />
-      <div class="card-body">
-        <h4 class="card-title">${p.name}</h4>
-        <div class="card-price">${fmt(p.price)}</div>
-        <div class="card-actions">
-          <button class="btn add-to-cart" data-id="${p.id}">Add to cart</button>
-          <button class="btn-outline" onclick="window.open('https://en.wikipedia.org/wiki/Sustainability','_blank')">Learn</button>
-        </div>
-      </div>
-    `;
-    container.appendChild(card);
-  });
-  // attach listeners
-  document.querySelectorAll('.add-to-cart').forEach(btn => {
-    btn.addEventListener('click',e => {
-      const id = Number(e.currentTarget.dataset.id);
-      addToCart(id);
+    // Auto rotate
+    function resetTimer(){
+      if(carouselTimer) clearInterval(carouselTimer);
+      if(!isInteracting) carouselTimer = setInterval(next, AUTO_ROTATE_MS);
+    }
+
+    // Pause while interacting
+    carousel.addEventListener('mouseenter', ()=>{ isInteracting=true; if(carouselTimer) clearInterval(carouselTimer); });
+    carousel.addEventListener('mouseleave', ()=>{ isInteracting=false; resetTimer(); });
+    carousel.addEventListener('focusin', ()=>{ isInteracting=true; if(carouselTimer) clearInterval(carouselTimer); });
+    carousel.addEventListener('focusout', ()=>{ isInteracting=false; resetTimer(); });
+
+    // Touch swipe support
+    let startX = 0, deltaX = 0, touching = false;
+    carousel.addEventListener('touchstart', e=>{
+      if(e.touches.length>1) return;
+      touching = true; startX = e.touches[0].clientX; deltaX = 0; isInteracting = true; if(carouselTimer) clearInterval(carouselTimer);
+    }, {passive:true});
+    carousel.addEventListener('touchmove', e=>{
+      if(!touching) return; deltaX = e.touches[0].clientX - startX;
+    }, {passive:true});
+    carousel.addEventListener('touchend', e=>{
+      touching = false; isInteracting = false; if(Math.abs(deltaX) > 40){ if(deltaX>0) prev(); else next(); } resetTimer();
+    });
+
+    // Keyboard navigation
+    carousel.addEventListener('keydown', e=>{
+      if(e.key === 'ArrowRight') next();
+      if(e.key === 'ArrowLeft') prev();
+    });
+
+    // init
+    slides.forEach((s,i)=> s.setAttribute('id', `slide-${i}`));
+    goTo(0);
+    resetTimer();
+  }
+
+  // Back button behavior: hide if at root
+  function initBackButton(){
+    const btn = qs('#back-button');
+    if(!btn) return;
+    function update(){
+      try{
+        // If there's at least one history entry to go back to, enable
+        if(window.history.length > 1){ btn.disabled = false; btn.style.opacity = 1; }
+        else { btn.disabled = true; btn.style.opacity = 0.4; }
+      }catch(e){ btn.disabled = true; btn.style.opacity = 0.4; }
+    }
+    update();
+    btn.addEventListener('click', e=>{
+      if(blockDoubleTap(btn)) return;
+      if(window.history.length > 1) window.history.back();
+    });
+    // update on popstate
+    window.addEventListener('popstate', update);
+  }
+
+  // Modal overlay
+  function initModal(){
+    const overlay = qs('#overlay-modal');
+    if(!overlay) return;
+    const panel = overlay.querySelector('.overlay-panel');
+    const close = overlay.querySelector('.overlay-close');
+
+    function show(html){ overlay.setAttribute('aria-hidden','false'); overlay.classList.add('open'); overlay.querySelector('#overlay-content').innerHTML = html; document.body.style.overflow = 'hidden'; }
+    function hide(){ overlay.setAttribute('aria-hidden','true'); overlay.classList.remove('open'); overlay.querySelector('#overlay-content').innerHTML = ''; document.body.style.overflow = ''; }
+
+    overlay.addEventListener('click', e=>{ if(e.target === overlay) hide(); });
+    close.addEventListener('click', hide);
+    document.addEventListener('keydown', e=>{ if(e.key === 'Escape' && overlay.getAttribute('aria-hidden') === 'false') hide(); });
+
+    // expose for demo (optional)
+    window.__LM_modal = { show, hide };
+  }
+
+  // Prevent double-tap/double-click causing duplicate navigation
+  function blockDoubleTap(el){
+    try{
+      const now = Date.now();
+      const key = el.dataset.fingerprint || (el.dataset.fingerprint = Math.random().toString(36).slice(2,9));
+      const last = doubleTapGuard.get(key) || 0;
+      if(now - last < 600){ return true; }
+      doubleTapGuard.set(key, now);
+      return false;
+    }catch(e){ return false; }
+  }
+
+  // init on DOM ready
+  document.addEventListener('DOMContentLoaded', ()=>{
+    initCarousel();
+    initBackButton();
+    initModal();
+
+    // Global touch target enforcement: set CSS variable for minimum touch size if needed (handled in CSS)
+
+    // Add a small helpful accessibility enhancement: focus visible outlines for keyboard users
+    document.body.addEventListener('keyup', e=>{
+      if(e.key === 'Tab') document.body.classList.add('show-focus');
     });
   });
-}
 
-function addToCart(productId, qty = 1){
-  cart[productId] = (cart[productId]||0) + qty;
-  saveCart();
-  updateCartCount();
-  showCart();
-}
-
-function removeFromCart(productId){
-  delete cart[productId];
-  saveCart();
-  renderCartItems();
-  updateCartCount();
-}
-
-function changeQty(productId, qty){
-  if(qty <= 0){ removeFromCart(productId); return; }
-  cart[productId] = qty;
-  saveCart();
-  renderCartItems();
-  updateCartCount();
-}
-
-function cartItemCount(){
-  return Object.values(cart).reduce((s,n)=>s+n,0);
-}
-
-function updateCartCount(){
-  document.getElementById('cart-count').textContent = cartItemCount();
-}
-
-// Cart UI
-function renderCartItems(){
-  const container = document.getElementById('cart-items');
-  container.innerHTML = '';
-  const ids = Object.keys(cart).map(x=>Number(x));
-  if(ids.length===0){
-    container.innerHTML = '<p>Your cart is empty.</p>';
-    document.getElementById('cart-total').textContent = fmt(0);
-    return;
-  }
-  let total = 0;
-  ids.forEach(id => {
-    const product = PRODUCTS.find(p=>p.id===id);
-    const qty = cart[id];
-    const line = product.price * qty;
-    total += line;
-
-    const item = document.createElement('div');
-    item.className = 'cart-item';
-    item.innerHTML = `
-      <img src="${product.img}" alt="${product.name}" />
-      <div class="meta">
-        <div>${product.name}</div>
-        <div style="color:var(--muted);font-size:0.95rem">${fmt(product.price)} × ${qty} = ${fmt(line)}</div>
-        <div class="qty-controls">
-          <button class="qty-decr" data-id="${id}">−</button>
-          <span>${qty}</span>
-          <button class="qty-incr" data-id="${id}">+</button>
-          <button class="btn-outline btn-sm remove" data-id="${id}">Remove</button>
-        </div>
-      </div>
-    `;
-    container.appendChild(item);
-  });
-  document.getElementById('cart-total').textContent = fmt(total);
-
-  // attach internal listeners
-  container.querySelectorAll('.qty-incr').forEach(b=>b.addEventListener('click',e=>{
-    const id = Number(e.currentTarget.dataset.id); changeQty(id, cart[id]+1);
-  }));
-  container.querySelectorAll('.qty-decr').forEach(b=>b.addEventListener('click',e=>{
-    const id = Number(e.currentTarget.dataset.id); changeQty(id, cart[id]-1);
-  }));
-  container.querySelectorAll('.remove').forEach(b=>b.addEventListener('click',e=>{
-    const id = Number(e.currentTarget.dataset.id); removeFromCart(id);
-  }));
-}
-
-// Cart modal toggles
-function showCart(){
-  const modal = document.getElementById('cart-modal');
-  modal.setAttribute('aria-hidden','false');
-  renderCartItems();
-}
-function hideCart(){
-  const modal = document.getElementById('cart-modal');
-  modal.setAttribute('aria-hidden','true');
-}
-
-function clearCart(){
-  cart = {};
-  saveCart();
-  renderCartItems();
-  updateCartCount();
-}
-
-function checkout(){
-  const count = cartItemCount();
-  if(count===0){ alert('Your cart is empty.'); return; }
-  // Simulate a checkout flow
-  alert(`Thank you! Your order for ${count} item(s) has been placed.`);
-  clearCart();
-  hideCart();
-}
-
-// Setup UI events
-document.addEventListener('DOMContentLoaded',()=>{
-  loadCart();
-  renderProducts();
-  updateCartCount();
-
-  document.getElementById('cart-button').addEventListener('click',showCart);
-  document.getElementById('close-cart').addEventListener('click',hideCart);
-  document.getElementById('cart-backdrop').addEventListener('click',hideCart);
-  document.getElementById('clear-cart').addEventListener('click',()=>{
-    if(confirm('Clear cart?')) clearCart();
-  });
-  document.getElementById('checkout').addEventListener('click',checkout);
-});
+})();
